@@ -15,7 +15,15 @@ Token ast_raw_token_to_token(string);
 struct ASTRuleConcatGroup;
 struct ASTRuleOrGroup;
 
-enum ASTRuleTokenType { NOTHING, TOKEN, DEFINITION, OR_GROUP, CONCAT_GROUP, OPTION, GROUP_CLOSE };
+enum ASTRuleTokenType {
+  NOTHING,
+  TOKEN,
+  DEFINITION,
+  OR_GROUP,
+  CONCAT_GROUP,
+  OPTION,
+  GROUP_CLOSE
+};
 
 ASTRuleTokenType token_type_of(string);
 
@@ -168,7 +176,7 @@ ASTRuleTokenType token_type_of(string raw) {
 }
 
 Token ast_raw_token_to_token(string raw) {
-  raw = raw.substr(2, raw.size() - 3); // Remove trailing 'T(' and leading ')'.
+  raw = raw.substr(2, raw.size() - 3);  // Remove trailing 'T(' and leading ')'.
   auto eq_pos = raw.find('=');
   string rawTokenType;
   string value;

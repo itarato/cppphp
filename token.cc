@@ -33,7 +33,7 @@ class Token {
   TokenType type;
 
  public:
-  Token() {};
+  Token(){};
   Token(string _orig, TokenType _type) : orig(_orig), type(_type){};
   friend ostream &operator<<(ostream &, const Token &);
 };
