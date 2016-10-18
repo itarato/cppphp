@@ -39,7 +39,26 @@ class Token {
 };
 
 ostream &operator<<(ostream &os, const Token &token) {
-  os << "Token: " << token.orig;
+  string type;
+  if (token.type == TokenType::PHP_START) type = "PHP_START";
+  if (token.type == TokenType::VARIABLE) type = "VARIABLE";
+  if (token.type == TokenType::KEYWORD) type = "KEYWORD";
+  if (token.type == TokenType::STRING) type = "STRING";
+  if (token.type == TokenType::PARENTHESIS_OPEN) type = "PARENTHESIS_OPEN";
+  if (token.type == TokenType::PARENTHESIS_CLOSE) type = "PARENTHESIS_CLOSE";
+  if (token.type == TokenType::BRACKET_OPEN) type = "BRACKET_OPEN";
+  if (token.type == TokenType::BRACKET_CLOSE) type = "BRACKET_CLOSE";
+  if (token.type == TokenType::SEMICOLON) type = "SEMICOLON";
+  if (token.type == TokenType::COMMA) type = "COMMA";
+  if (token.type == TokenType::OP_ASSIGNMENT) type = "OP_ASSIGNMENT";
+  if (token.type == TokenType::OP_PLUS) type = "OP_PLUS";
+  if (token.type == TokenType::OP_MINUS) type = "OP_MINUS";
+  if (token.type == TokenType::OP_MULTIPLY) type = "OP_MULTIPLY";
+  if (token.type == TokenType::OP_DIVIDE) type = "OP_DIVIDE";
+  if (token.type == TokenType::OP_MODULO) type = "OP_MODULO";
+  if (token.type == TokenType::SPEC_NAME) type = "SPEC_NAME";
+  if (token.type == TokenType::NUMERIC) type = "NUMERIC";
+  os << "T(" << type << "=" << (token.orig.size() ? token.orig : "?") << ")";
   return os;
 }
 

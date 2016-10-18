@@ -27,16 +27,50 @@ struct ASTRuleToken {
     ASTRuleOrGroup* or_group;
     // Nothing is only defined in the struct's `type`.
   } value;
-};
 
-struct ASTRuleOrGroup {
-  vector<ASTRuleConcatGroup*> options;
-  bool flagAnyNumberRepeat;
+  void debug(string);
 };
 
 struct ASTRuleConcatGroup {
   vector<ASTRuleToken*> tokens;
+
+  void debug(string);
 };
+
+void ASTRuleConcatGroup::debug(string indent) {
+  cout << indent << "GROUP:" << endl;
+  for (auto e : tokens) {
+    e->debug(indent + "  ");
+  }
+}
+
+struct ASTRuleOrGroup {
+  vector<ASTRuleConcatGroup*> options;
+  bool flagAnyNumberRepeat;
+
+  void debug(string);
+};
+
+void ASTRuleOrGroup::debug(string indent) {
+  cout << indent << "OR GROUP" << (flagAnyNumberRepeat ? " (*):" : ":") << endl;
+  for (ASTRuleConcatGroup* e : options) {
+    e->debug(indent + "  ");
+  }
+}
+
+void ASTRuleToken::debug(string indent) {
+  if (type == ASTRuleTokenType::NOTHING) {
+    cout << indent << "NOTHING" << endl;
+  } else if (type == ASTRuleTokenType::TOKEN) {
+    cout << indent << "TOKEN: " << value.token << endl;
+  } else if (type == ASTRuleTokenType::DEFINITION) {
+    cout << indent << "DEFINITION: " << value.definition << endl;
+  } else if (type == ASTRuleTokenType::OR_GROUP) {
+    value.or_group->debug(indent);
+  } else {
+    cout << indent << "unknown token" << endl;
+  }
+}
 
 class AstRuleBuilder {
  private:
@@ -60,7 +94,9 @@ void AstRuleBuilder::build() {
   }
 
   for (auto it : rules) {
-    cout << it.first << " " << it.second->options.size() << endl;
+    cout << it.first << endl;
+    it.second->debug("  ");
+    cout << endl;
   }
 }
 
@@ -130,12 +166,6 @@ ASTRuleTokenType token_type_of(string raw) {
 
   return ASTRuleTokenType::DEFINITION;
 }
-
-// void putback_word(istringstream& is, string word) {
-//   for (auto it = word.rbegin(); it != word.rend(); it++) {
-//     is.putback(*it);
-//   }
-// }
 
 Token ast_raw_token_to_token(string raw) {
   raw = raw.substr(2, raw.size() - 3); // Remove trailing 'T(' and leading ')'.
