@@ -13,7 +13,7 @@ using namespace std;
 class Tokenizer {
  private:
   SourceFileReader* reader;
-  vector<Token> tokens;
+  vector<Token*> tokens;
   vector<Token* (*)(SourceFileReader*)> rules;
 
  public:
@@ -23,15 +23,20 @@ class Tokenizer {
              token_rule__numeric,      token_rule__special_chars,
              token_rule__spec_name};
   };
-  vector<Token>* get_tokens() { return &tokens; };
+  ~Tokenizer();
+
+  vector<Token*> get_tokens() { return tokens; };
   void run();
 };
+
+Tokenizer::~Tokenizer() {}
 
 void Tokenizer::run() {
   while (!reader->is_end()) {
     for (auto rule : rules) {
       Token* token = rule(reader);
       if (token != nullptr) {
+        tokens.push_back(token);
         cout << *token << endl;
         goto skip_run_while;
       }

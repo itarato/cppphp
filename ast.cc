@@ -20,10 +20,10 @@ class AST {
   AstRuleBuilder ruleBuilder;
 
  public:
-  AST(vector<Token>*);
+  AST(vector<Token*>);
 };
 
-AST::AST(vector<Token>* tokens) {
+AST::AST(vector<Token*> tokens) {
   ruleBuilder = AstRuleBuilder();
   ruleBuilder.build();
 
