@@ -37,8 +37,8 @@ void Tokenizer::run() {
       }
     }
     reader->get();
-    // cout << "Miss: " << ch_missed << endl;
-skip_run_while: ;
+
+  skip_run_while:;
   }
 }
 

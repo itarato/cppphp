@@ -2,10 +2,10 @@
 #define CC_AST
 
 #include <iostream>
-#include <vector>
 #include <string>
-#include "token.cc"
+#include <vector>
 #include "ast_rule_builder.cc"
+#include "token.cc"
 
 using namespace std;
 
@@ -15,16 +15,19 @@ struct ASTNode {
 };
 
 class AST {
-private:
+ private:
   ASTNode* root;
   AstRuleBuilder ruleBuilder;
-public:
+
+ public:
   AST(vector<Token>*);
 };
 
 AST::AST(vector<Token>* tokens) {
   ruleBuilder = AstRuleBuilder();
   ruleBuilder.build();
+
+  auto rules = ruleBuilder.get_rules();
 }
 
 #endif

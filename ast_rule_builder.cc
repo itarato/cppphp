@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "token.cc"
 
 using namespace std;
 
@@ -45,40 +46,12 @@ struct ASTRuleConcatGroup {
   void debug(string);
 };
 
-void ASTRuleConcatGroup::debug(string indent) {
-  cout << indent << "GROUP:" << endl;
-  for (auto e : tokens) {
-    e->debug(indent + "  ");
-  }
-}
-
 struct ASTRuleOrGroup {
   vector<ASTRuleConcatGroup*> options;
   bool flagAnyNumberRepeat;
 
   void debug(string);
 };
-
-void ASTRuleOrGroup::debug(string indent) {
-  cout << indent << "OR GROUP" << (flagAnyNumberRepeat ? " (*):" : ":") << endl;
-  for (ASTRuleConcatGroup* e : options) {
-    e->debug(indent + "  ");
-  }
-}
-
-void ASTRuleToken::debug(string indent) {
-  if (type == ASTRuleTokenType::NOTHING) {
-    cout << indent << "NOTHING" << endl;
-  } else if (type == ASTRuleTokenType::TOKEN) {
-    cout << indent << "TOKEN: " << value.token << endl;
-  } else if (type == ASTRuleTokenType::DEFINITION) {
-    cout << indent << "DEFINITION: " << value.definition << endl;
-  } else if (type == ASTRuleTokenType::OR_GROUP) {
-    value.or_group->debug(indent);
-  } else {
-    cout << indent << "unknown token" << endl;
-  }
-}
 
 class AstRuleBuilder {
  private:
@@ -91,32 +64,10 @@ class AstRuleBuilder {
  public:
   AstRuleBuilder() : fin("./ast.rule"){};
 
+  const map<string, ASTRuleOrGroup*>* get_rules() const { return &rules; };
+
   void build();
 };
-
-void AstRuleBuilder::build() {
-  string word;
-  while (!fin.eof()) {
-    getline(fin, word);
-    parse_rule(word);
-  }
-
-  for (auto it : rules) {
-    cout << it.first << endl;
-    it.second->debug("  ");
-    cout << endl;
-  }
-}
-
-void AstRuleBuilder::parse_rule(string& rule_raw) {
-  istringstream is(rule_raw);
-  string rule_name;
-  is >> rule_name;
-  rule_name.pop_back();
-
-  ASTRuleOrGroup* group = parse_rule_group(is);
-  rules[rule_name] = group;
-}
 
 ASTRuleOrGroup* AstRuleBuilder::parse_rule_group(istringstream& is) {
   ASTRuleOrGroup* group = new ASTRuleOrGroup{};
@@ -164,6 +115,62 @@ ASTRuleOrGroup* AstRuleBuilder::parse_rule_group(istringstream& is) {
 
   return group;
 }
+
+void AstRuleBuilder::build() {
+  string word;
+  while (!fin.eof()) {
+    getline(fin, word);
+    parse_rule(word);
+  }
+
+  for (auto it : rules) {
+    cout << it.first << endl;
+    it.second->debug("  ");
+    cout << endl;
+  }
+}
+
+void AstRuleBuilder::parse_rule(string& rule_raw) {
+  istringstream is(rule_raw);
+  string rule_name;
+  is >> rule_name;
+  rule_name.pop_back();
+
+  ASTRuleOrGroup* group = parse_rule_group(is);
+  rules[rule_name] = group;
+}
+
+// STRUCT METHODS /////////////////////////////////////////////////////////////
+
+void ASTRuleOrGroup::debug(string indent) {
+  cout << indent << "OR GROUP" << (flagAnyNumberRepeat ? " (*):" : ":") << endl;
+  for (const auto e : options) {
+    e->debug(indent + "  ");
+  }
+}
+
+void ASTRuleToken::debug(string indent) {
+  if (type == ASTRuleTokenType::NOTHING) {
+    cout << indent << "NOTHING" << endl;
+  } else if (type == ASTRuleTokenType::TOKEN) {
+    cout << indent << "TOKEN: " << value.token << endl;
+  } else if (type == ASTRuleTokenType::DEFINITION) {
+    cout << indent << "DEFINITION: " << value.definition << endl;
+  } else if (type == ASTRuleTokenType::OR_GROUP) {
+    value.or_group->debug(indent);
+  } else {
+    cout << indent << "unknown token" << endl;
+  }
+}
+
+void ASTRuleConcatGroup::debug(string indent) {
+  cout << indent << "GROUP:" << endl;
+  for (const auto e : tokens) {
+    e->debug(indent + "  ");
+  }
+}
+
+// HELPERS ////////////////////////////////////////////////////////////////////
 
 ASTRuleTokenType token_type_of(string raw) {
   if (raw[0] == 'T') return ASTRuleTokenType::TOKEN;
