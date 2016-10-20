@@ -64,7 +64,7 @@ class AstRuleBuilder {
  public:
   AstRuleBuilder() : fin("./ast.rule"){};
 
-  const map<string, ASTRuleOrGroup*>* get_rules() const { return &rules; };
+  map<string, ASTRuleOrGroup*>* get_rules() { return &rules; };
 
   void build();
 };
