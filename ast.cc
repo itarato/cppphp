@@ -45,15 +45,28 @@ AST::AST(vector<Token*> tokens) {
 bool AST::try_or_group(vector<Token*>::iterator* current,
                        vector<Token*>::iterator* end,
                        ASTRuleOrGroup* or_group) {
-  for (auto concat_group : or_group->options) {
-    bool match = try_concat_group(current, end, concat_group);
-    if (match) {
-      return true;
-    }
-  }
+  bool had_any_match = false;
+  bool has_match;
 
-  // If it's wildcarded, than 0 counts as true.
-  return or_group->flagAnyNumberRepeat;
+  do {
+    has_match = false;
+    for (auto concat_group : or_group->options) {
+      Token* backup = **current;
+      bool match = try_concat_group(current, end, concat_group);
+      if (match) {
+        has_match = true;
+        had_any_match = true;
+        break;
+      } else {
+        (**current) = backup;
+        cout << "backup to: " << (*backup) << endl;
+      }
+    }
+  } while (has_match && or_group->flagAnyNumberRepeat);
+
+  //                      If it's wildcarded, than 0 counts as true.
+  cout << "or group result: " << (had_any_match || or_group->flagAnyNumberRepeat) << endl;
+  return had_any_match || or_group->flagAnyNumberRepeat;
 }
 
 bool AST::try_concat_group(vector<Token*>::iterator* current,
@@ -62,7 +75,6 @@ bool AST::try_concat_group(vector<Token*>::iterator* current,
   for (auto token : concat_group->tokens) {
     bool match = try_token(current, end, token);
     if (!match) {
-      // @todo there should be some rollback here
       return false;
     }
   }
@@ -79,12 +91,13 @@ bool AST::try_token(vector<Token*>::iterator* current,
 
     // End of all source tokens.
     if ((*current) == (*end)) {
-      cout << " - NO" << endl;
+      cout << " - NO (OVER)" << endl;
       return false;
     }
 
     if ((**current)->type == token->value.token.type) {
-      if (token->value.token.orig == "" || token->value.token.orig == (**current)->orig) {
+      if (token->value.token.orig == "" ||
+          token->value.token.orig == (**current)->orig) {
         cout << " - YES" << endl;
         (*current)++;
         return true;
