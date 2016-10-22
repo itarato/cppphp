@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <map>
+#include <set>
 #include "ast_rule_builder.cc"
 #include "token.cc"
 
@@ -19,6 +21,7 @@ class AST {
   ASTNode* root;
   AstRuleBuilder ruleBuilder;
   map<string, ASTRuleOrGroup*>* rules;
+  set<void*> loop_set;
 
  public:
   AST(vector<Token*>);
@@ -45,8 +48,18 @@ AST::AST(vector<Token*> tokens) {
 bool AST::try_or_group(vector<Token*>::iterator* current,
                        vector<Token*>::iterator* end,
                        ASTRuleOrGroup* or_group) {
+  if ((*current) == (*end)) return false;
+
   bool had_any_match = false;
   bool has_match;
+
+  auto self_loop_pos = loop_set.find(or_group);
+  if (self_loop_pos != loop_set.end()) {
+    cout << "loop detected" << endl;
+    return false;
+  }
+
+  loop_set.insert(or_group);
 
   do {
     has_match = false;
@@ -72,6 +85,8 @@ bool AST::try_or_group(vector<Token*>::iterator* current,
 bool AST::try_concat_group(vector<Token*>::iterator* current,
                            vector<Token*>::iterator* end,
                            ASTRuleConcatGroup* concat_group) {
+  if ((*current) == (*end)) return false;
+
   for (auto token : concat_group->tokens) {
     bool match = try_token(current, end, token);
     if (!match) {
@@ -83,6 +98,8 @@ bool AST::try_concat_group(vector<Token*>::iterator* current,
 
 bool AST::try_token(vector<Token*>::iterator* current,
                     vector<Token*>::iterator* end, ASTRuleToken* token) {
+  if ((*current) == (*end)) return false;
+
   if (token->type == ASTRuleTokenType::NOTHING) {
     cout << "try token - nothing" << endl;
     return true;
@@ -100,6 +117,7 @@ bool AST::try_token(vector<Token*>::iterator* current,
           token->value.token.orig == (**current)->orig) {
         cout << " - YES" << endl;
         (*current)++;
+        loop_set.clear();
         return true;
       }
     }
