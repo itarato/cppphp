@@ -48,7 +48,10 @@ AST::AST(vector<Token*> tokens) {
 bool AST::try_or_group(vector<Token*>::iterator* current,
                        vector<Token*>::iterator* end,
                        ASTRuleOrGroup* or_group) {
-  if ((*current) == (*end)) return false;
+  if ((*current) == (*end)) {
+    cout << "the end 0" << endl;
+    return false;
+  }
 
   bool had_any_match = false;
   bool has_match;
@@ -85,7 +88,10 @@ bool AST::try_or_group(vector<Token*>::iterator* current,
 bool AST::try_concat_group(vector<Token*>::iterator* current,
                            vector<Token*>::iterator* end,
                            ASTRuleConcatGroup* concat_group) {
-  if ((*current) == (*end)) return false;
+  if ((*current) == (*end)) {
+    cout << "the end 1" << endl;
+    return false;
+  }
 
   for (auto token : concat_group->tokens) {
     bool match = try_token(current, end, token);
@@ -98,7 +104,10 @@ bool AST::try_concat_group(vector<Token*>::iterator* current,
 
 bool AST::try_token(vector<Token*>::iterator* current,
                     vector<Token*>::iterator* end, ASTRuleToken* token) {
-  if ((*current) == (*end)) return false;
+  if ((*current) == (*end)) {
+    cout << "the end 2" << endl;
+    return false;
+  }
 
   if (token->type == ASTRuleTokenType::NOTHING) {
     cout << "try token - nothing" << endl;
