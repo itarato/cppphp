@@ -12,12 +12,12 @@ using namespace std;
 
 class SourceFileReader {
  private:
-  string fileName;
+  string file_name;
   ifstream fin;
 
  public:
-  SourceFileReader(string _fileName)
-      : fileName(_fileName), fin(fileName.c_str()){};
+  SourceFileReader(string _file_name)
+      : file_name(_file_name), fin(file_name.c_str()){};
 
   ~SourceFileReader() { fin.close(); };
 

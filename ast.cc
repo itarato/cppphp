@@ -19,7 +19,7 @@ struct ASTNode {
 class AST {
  private:
   ASTNode* root;
-  AstRuleBuilder ruleBuilder;
+  AstRuleBuilder rule_builder;
   map<string, ASTRuleOrGroup*>* rules;
   /// Evaluating rules can get into an infinite loop when a sub-rule is the
   /// same as a parent rule (any parent) without progressing on the token line.
@@ -39,10 +39,10 @@ class AST {
 };
 
 AST::AST(vector<Token*> tokens) {
-  ruleBuilder = AstRuleBuilder();
-  ruleBuilder.build();
+  rule_builder = AstRuleBuilder();
+  rule_builder.build();
 
-  rules = ruleBuilder.get_rules();
+  rules = rule_builder.get_rules();
 
   auto begin = tokens.begin();
   auto end = tokens.end();
