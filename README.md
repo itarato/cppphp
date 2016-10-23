@@ -181,4 +181,88 @@ STMT
           TOKEN: T(SEMICOLON=?)
 ```
 
-So you can build up the AST from the tokens. In progress.
+So you can build up the AST from the tokens:
+
+```
+or
+  concat
+    T(PHP_START=<?php)
+    or
+      concat
+        or
+          concat
+            or
+              concat
+                T(KEYWORD=function)
+                T(SPEC_NAME=foo)
+                T(PARENTHESIS_OPEN=()
+                or
+                  concat
+                    or
+                T(PARENTHESIS_CLOSE=))
+                T(BRACKET_OPEN={)
+                or
+                  concat
+                    or
+                      concat
+                        or
+                          concat
+                            or
+                              concat
+                                or
+                                  concat
+                                    or
+                                      concat
+                                        or
+                                          concat
+                                            T(KEYWORD=echo)
+                                            T(PARENTHESIS_OPEN=()
+                                            or
+                                              concat
+                                                or
+                                                  concat
+                                                    or
+                                                      concat
+                                                        or
+                                                          concat
+                                                            T(STRING=Hello)
+                                                    or
+                                            T(PARENTHESIS_CLOSE=))
+                                T(SEMICOLON=;)
+                      concat
+                        or
+                          concat
+                            or
+                T(BRACKET_CLOSE=})
+          concat
+            or
+              concat
+                or
+                  concat
+                    or
+                      concat
+                        or
+                          concat
+                            T(VARIABLE=$a)
+                            T(OP_ASSIGNMENT==)
+                            or
+                              concat
+                                or
+                                  concat
+                                    T(NUMERIC=1)
+                    T(SEMICOLON=;)
+                  concat
+                    or
+                      concat
+                        or
+                          concat
+                            or
+                              concat
+                                T(SPEC_NAME=foo)
+                                T(PARENTHESIS_OPEN=()
+                                or
+                                  concat
+                                    or
+                                T(PARENTHESIS_CLOSE=))
+                    T(SEMICOLON=;)
+```

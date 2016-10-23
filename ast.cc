@@ -6,15 +6,29 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <sstream>
 #include "ast_rule_builder.cc"
 #include "token.cc"
 
 using namespace std;
 
+// STRUCTS ////////////////////////////////////////////////////////////////////
+
 struct ASTNode {
   string type;
   vector<ASTNode*> children;
+
+  void debug(string) const;
 };
+
+void ASTNode::debug(string padding = "") const {
+  cout << padding << type << endl;
+  for (const auto & child : children) {
+    child->debug(padding + "  ");
+  }
+}
+
+// CLASS //////////////////////////////////////////////////////////////////////
 
 class AST {
  private:
@@ -30,11 +44,11 @@ class AST {
  public:
   AST(vector<Token*>);
 
-  bool try_or_group(vector<Token*>::iterator*, vector<Token*>::iterator*,
+  ASTNode* try_or_group(vector<Token*>::iterator*, vector<Token*>::iterator*,
                     ASTRuleOrGroup*);
-  bool try_concat_group(vector<Token*>::iterator*, vector<Token*>::iterator*,
+  ASTNode* try_concat_group(vector<Token*>::iterator*, vector<Token*>::iterator*,
                         ASTRuleConcatGroup*);
-  bool try_token(vector<Token*>::iterator*, vector<Token*>::iterator*,
+  ASTNode* try_token(vector<Token*>::iterator*, vector<Token*>::iterator*,
                  ASTRuleToken*);
 };
 
@@ -46,13 +60,15 @@ AST::AST(vector<Token*> tokens) {
 
   auto begin = tokens.begin();
   auto end = tokens.end();
-  try_or_group(&begin, &end, (*rules)["PROG"]);
+
+  ASTNode* root = try_or_group(&begin, &end, (*rules)["PROG"]);
+  root->debug();
 }
 
-bool AST::try_or_group(vector<Token*>::iterator* current,
+ASTNode* AST::try_or_group(vector<Token*>::iterator* current,
                        vector<Token*>::iterator* end,
                        ASTRuleOrGroup* or_group) {
-  if ((*current) == (*end)) return false;
+  if ((*current) == (*end)) return nullptr;
 
   bool had_any_match = false;
   bool has_match;
@@ -60,9 +76,11 @@ bool AST::try_or_group(vector<Token*>::iterator* current,
   auto self_loop_pos = loop_set.find(or_group);
   /// Loop is detected (one parent is the same as current without using any
   /// tokens). Return false as this would lead to nowhere.
-  if (self_loop_pos != loop_set.end()) return false;
+  if (self_loop_pos != loop_set.end()) return nullptr;
 
   loop_set.insert(or_group);
+
+  ASTNode* node = new ASTNode{"or"};
 
   do {
     has_match = false;
@@ -70,10 +88,11 @@ bool AST::try_or_group(vector<Token*>::iterator* current,
       if ((*current) == (*end)) break;
 
       Token* backup = **current;
-      bool match = try_concat_group(current, end, concat_group);
-      if (match) {
+      ASTNode* child = try_concat_group(current, end, concat_group);
+      if (child != nullptr) {
         has_match = true;
         had_any_match = true;
+        node->children.push_back(child);
         break;
       } else {
         **current = backup;
@@ -82,30 +101,32 @@ bool AST::try_or_group(vector<Token*>::iterator* current,
   } while (has_match && or_group->flagAnyNumberRepeat);
 
   // If it's wildcarded, than 0 counts as true.
-  return had_any_match || or_group->flagAnyNumberRepeat;
+  return (had_any_match || or_group->flagAnyNumberRepeat) ? node : nullptr;
 }
 
-bool AST::try_concat_group(vector<Token*>::iterator* current,
+ASTNode* AST::try_concat_group(vector<Token*>::iterator* current,
                            vector<Token*>::iterator* end,
                            ASTRuleConcatGroup* concat_group) {
-  if ((*current) == (*end)) return false;
+  if ((*current) == (*end)) return nullptr;
+
+  ASTNode* node = new ASTNode{"concat"};
 
   for (auto token : concat_group->tokens) {
-    bool match = try_token(current, end, token);
-    if (!match) {
-      return false;
-    }
+    ASTNode* child = try_token(current, end, token);
+    if (child == nullptr) return nullptr;
+    node->children.push_back(child);
   }
-  return true;
+
+  return node;
 }
 
-bool AST::try_token(vector<Token*>::iterator* current,
+ASTNode* AST::try_token(vector<Token*>::iterator* current,
                     vector<Token*>::iterator* end, ASTRuleToken* token) {
-  if ((*current) == (*end)) return false;
+  if ((*current) == (*end)) return nullptr;
 
   if (token->type == ASTRuleTokenType::NOTHING) {
     cout << "try token - nothing" << endl;
-    return true;
+    return new ASTNode{"nothing"};
   } else if (token->type == ASTRuleTokenType::TOKEN) {
     cout << "try token - token - " << token->value.token;
 
@@ -115,12 +136,15 @@ bool AST::try_token(vector<Token*>::iterator* current,
         cout << " - YES" << endl;
         (*current)++;
         loop_set.clear();
-        return true;
+
+        ostringstream os;
+        os << (**(*current - 1));
+        return new ASTNode{os.str()};
       }
     }
 
     cout << " - NO" << endl;
-    return false;
+    return nullptr;
 
   } else if (token->type == ASTRuleTokenType::DEFINITION) {
     cout << "try token - definition - " << token->value.definition << endl;
