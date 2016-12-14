@@ -53,6 +53,8 @@ struct ASTRuleOrGroup {
   void debug(string);
 };
 
+// AstRuleBuilder /////////////////////////////////////////////////////////////
+
 class AstRuleBuilder {
  private:
   ifstream fin;
@@ -63,11 +65,18 @@ class AstRuleBuilder {
 
  public:
   AstRuleBuilder() : fin("./ast.rule"){};
+  ~AstRuleBuilder();
 
   map<string, ASTRuleOrGroup*>* get_rules() { return &rules; };
 
   void build();
 };
+
+AstRuleBuilder::~AstRuleBuilder() {
+  for (auto& elem : rules) {
+    delete elem.second;
+  }
+}
 
 ASTRuleOrGroup* AstRuleBuilder::parse_rule_group(istringstream& is) {
   ASTRuleOrGroup* group = new ASTRuleOrGroup{};
@@ -123,11 +132,13 @@ void AstRuleBuilder::build() {
     parse_rule(word);
   }
 
+#ifdef DEBUG
   for (auto it : rules) {
     cout << it.first << endl;
     it.second->debug("  ");
     cout << endl;
   }
+#endif
 }
 
 void AstRuleBuilder::parse_rule(string& rule_raw) {

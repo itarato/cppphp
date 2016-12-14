@@ -14,7 +14,7 @@ public:
     TestCase() : count_success(0), count_failure(0) {};
     
     virtual void run() = 0;
-    virtual string getName() { return ""; };
+    virtual string getName() = 0;
     
     virtual void report() {
         if (count_failure > 0) {

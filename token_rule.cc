@@ -8,7 +8,7 @@
 
 using namespace std;
 
-Token* token_rule__php_open_tag(SourceFileReader* reader) {
+Token* token_rule__php_open_tag(shared_ptr<SourceFileReader> reader) {
   if (reader->peek_n(5) == "<?php") {
     return new Token(reader->get_n(5), TokenType::PHP_START);
   }
@@ -16,7 +16,7 @@ Token* token_rule__php_open_tag(SourceFileReader* reader) {
   return nullptr;
 }
 
-Token* token_rule__variable(SourceFileReader* reader) {
+Token* token_rule__variable(shared_ptr<SourceFileReader> reader) {
   if (reader->peek_n(1) == "$") {
     // @todo use the proper formula (cannot start with number, etc)
     return new Token(
@@ -27,7 +27,7 @@ Token* token_rule__variable(SourceFileReader* reader) {
   return nullptr;
 }
 
-Token* token_rule__keyword(SourceFileReader* reader) {
+Token* token_rule__keyword(shared_ptr<SourceFileReader> reader) {
   vector<string> keywords = {"__halt_compiler",
                              "abstract",
                              "and",
@@ -104,7 +104,7 @@ Token* token_rule__keyword(SourceFileReader* reader) {
   return nullptr;
 }
 
-Token* token_rule__string(SourceFileReader* reader) {
+Token* token_rule__string(shared_ptr<SourceFileReader> reader) {
   const char_type ch = reader->peek();
   if (ch == '"' || ch == '\'') {
     reader->get();
@@ -115,7 +115,7 @@ Token* token_rule__string(SourceFileReader* reader) {
   return nullptr;
 }
 
-Token* token_rule__special_chars(SourceFileReader* reader) {
+Token* token_rule__special_chars(shared_ptr<SourceFileReader> reader) {
   map<char_type, TokenType> special_chars = {
       {'(', TokenType::PARENTHESIS_OPEN}, {')', TokenType::PARENTHESIS_CLOSE},
       {'{', TokenType::BRACKET_OPEN},     {'}', TokenType::BRACKET_CLOSE},
@@ -133,7 +133,7 @@ Token* token_rule__special_chars(SourceFileReader* reader) {
   return nullptr;
 }
 
-Token* token_rule__spec_name(SourceFileReader* reader) {
+Token* token_rule__spec_name(shared_ptr<SourceFileReader> reader) {
   const char_type ch = reader->peek();
   if ((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z')) {
     return new Token(
@@ -143,7 +143,7 @@ Token* token_rule__spec_name(SourceFileReader* reader) {
   return nullptr;
 }
 
-Token* token_rule__numeric(SourceFileReader* reader) {
+Token* token_rule__numeric(shared_ptr<SourceFileReader> reader) {
   const char_type ch = reader->peek();
   if (ch >= '0' && ch <= '9') {
     return new Token(reader->get_while({{'0', '9'}, {'.', '.'}, {'x', 'x'}}),

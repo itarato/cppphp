@@ -12,16 +12,17 @@ using namespace std;
 
 class Tokenizer {
  private:
-  SourceFileReader* reader;
+  shared_ptr<SourceFileReader> reader;
   vector<Token*> tokens;
-  vector<Token* (*)(SourceFileReader*)> rules;
+  vector<Token* (*)(shared_ptr<SourceFileReader>)> rules;
 
  public:
-  Tokenizer(SourceFileReader* _sfr) : reader(_sfr) {
+  Tokenizer(shared_ptr<SourceFileReader> _sfr) : reader(_sfr) {
     rules = {token_rule__php_open_tag, token_rule__variable,
              token_rule__keyword,      token_rule__string,
              token_rule__numeric,      token_rule__special_chars,
              token_rule__spec_name};
+    run();
   };
   ~Tokenizer();
 
@@ -29,7 +30,11 @@ class Tokenizer {
   void run();
 };
 
-Tokenizer::~Tokenizer() {}
+Tokenizer::~Tokenizer() {
+  for (auto & t : tokens) {
+    delete t;
+  }
+}
 
 void Tokenizer::run() {
   while (!reader->is_end()) {
