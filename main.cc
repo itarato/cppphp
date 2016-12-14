@@ -7,7 +7,7 @@
 using namespace std;
 
 int main() {
-  SourceFileReader sfr("simple.php");
+  SourceFileReader sfr("test_cases/simple.php");
 
   Tokenizer tkn(&sfr);
   tkn.run();

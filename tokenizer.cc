@@ -37,7 +37,6 @@ void Tokenizer::run() {
       Token* token = rule(reader);
       if (token != nullptr) {
         tokens.push_back(token);
-        cout << *token << endl;
         goto skip_run_while;
       }
     }
