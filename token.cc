@@ -27,12 +27,14 @@ enum TokenType {
   NUMERIC
 };
 
-class Token {
- public:
+struct Token {
   string orig;
   TokenType type;
+
   Token(){};
   Token(string _orig, TokenType _type) : orig(_orig), type(_type){};
+  Token(const Token & t) : orig(t.orig), type(t.type) {};
+
   friend ostream &operator<<(ostream &, const Token &);
 };
 

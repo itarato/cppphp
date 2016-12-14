@@ -10,14 +10,10 @@
 using namespace std;
 
 int main() {
-  vector<Token*> t;
-  {
-    Tokenizer tkn(make_shared<SourceFileReader>("test_cases/simple.php"));
-    t = tkn.get_tokens();
-  }
-  AST ast(t);
+  Tokenizer tkn(make_shared<SourceFileReader>("test_cases/simple.php"));
+  AST ast(tkn.get_tokens());
 
-  // ast.debug();
+  ast.debug();
 
   return 0;
 }

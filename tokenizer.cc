@@ -13,8 +13,8 @@ using namespace std;
 class Tokenizer {
  private:
   shared_ptr<SourceFileReader> reader;
-  vector<Token*> tokens;
-  vector<Token* (*)(shared_ptr<SourceFileReader>)> rules;
+  vector<Token> tokens;
+  vector<MaybeToken (*)(shared_ptr<SourceFileReader>)> rules;
 
  public:
   Tokenizer(shared_ptr<SourceFileReader> _sfr) : reader(_sfr) {
@@ -24,24 +24,17 @@ class Tokenizer {
              token_rule__spec_name};
     run();
   };
-  ~Tokenizer();
 
-  vector<Token*> get_tokens() { return tokens; };
+  vector<Token> get_tokens() { return tokens; };
   void run();
 };
-
-Tokenizer::~Tokenizer() {
-  for (auto & t : tokens) {
-    delete t;
-  }
-}
 
 void Tokenizer::run() {
   while (!reader->is_end()) {
     for (auto rule : rules) {
-      Token* token = rule(reader);
-      if (token != nullptr) {
-        tokens.push_back(token);
+      MaybeToken mbt = rule(reader);
+      if (mbt.is_token) {
+        tokens.push_back(mbt.token);
         goto skip_run_while;
       }
     }

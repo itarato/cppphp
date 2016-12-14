@@ -18,6 +18,12 @@ struct ASTNode {
   string type;
   vector<ASTNode*> children;
 
+  ~ASTNode() {
+    for (auto & c : children) {
+      delete c;
+    }
+  }
+
   void debug(string) const;
 };
 
@@ -42,14 +48,14 @@ class AST {
   set<void*> loop_set;
 
  public:
-  AST(vector<Token*>);
+  AST(vector<Token>);
   ~AST();
 
-  ASTNode* try_or_group(vector<Token*>::iterator*, vector<Token*>::iterator*,
+  ASTNode* try_or_group(vector<Token>::iterator*, vector<Token>::iterator*,
                         ASTRuleOrGroup*);
-  ASTNode* try_concat_group(vector<Token*>::iterator*,
-                            vector<Token*>::iterator*, ASTRuleConcatGroup*);
-  ASTNode* try_token(vector<Token*>::iterator*, vector<Token*>::iterator*,
+  ASTNode* try_concat_group(vector<Token>::iterator*,
+                            vector<Token>::iterator*, ASTRuleConcatGroup*);
+  ASTNode* try_token(vector<Token>::iterator*, vector<Token>::iterator*,
                      ASTRuleToken*);
 
   ASTNode* get_root() { return root; };
@@ -57,7 +63,7 @@ class AST {
   void debug() { root->debug(); };
 };
 
-AST::AST(vector<Token*> tokens) {
+AST::AST(vector<Token> tokens) {
   rule_builder.build();
 
   rules = rule_builder.get_rules();
@@ -72,8 +78,8 @@ AST::~AST() {
   delete root;
 }
 
-ASTNode* AST::try_or_group(vector<Token*>::iterator* current,
-                           vector<Token*>::iterator* end,
+ASTNode* AST::try_or_group(vector<Token>::iterator* current,
+                           vector<Token>::iterator* end,
                            ASTRuleOrGroup* or_group) {
   if ((*current) == (*end)) return nullptr;
 
@@ -94,7 +100,7 @@ ASTNode* AST::try_or_group(vector<Token*>::iterator* current,
     for (auto concat_group : or_group->options) {
       if ((*current) == (*end)) break;
 
-      Token* backup = **current;
+      Token backup = **current;
       ASTNode* child = try_concat_group(current, end, concat_group);
       if (child != nullptr) {
         has_match = true;
@@ -111,8 +117,8 @@ ASTNode* AST::try_or_group(vector<Token*>::iterator* current,
   return (had_any_match || or_group->flagAnyNumberRepeat) ? node : nullptr;
 }
 
-ASTNode* AST::try_concat_group(vector<Token*>::iterator* current,
-                               vector<Token*>::iterator* end,
+ASTNode* AST::try_concat_group(vector<Token>::iterator* current,
+                               vector<Token>::iterator* end,
                                ASTRuleConcatGroup* concat_group) {
   if ((*current) == (*end)) return nullptr;
 
@@ -127,49 +133,29 @@ ASTNode* AST::try_concat_group(vector<Token*>::iterator* current,
   return node;
 }
 
-ASTNode* AST::try_token(vector<Token*>::iterator* current,
-                        vector<Token*>::iterator* end, ASTRuleToken* token) {
+ASTNode* AST::try_token(vector<Token>::iterator* current,
+                        vector<Token>::iterator* end, ASTRuleToken* token) {
   if ((*current) == (*end)) return nullptr;
 
   if (token->type == ASTRuleTokenType::NOTHING) {
-#ifdef DEBUG
-    cout << "try token - nothing" << endl;
-#endif
     return new ASTNode{"nothing"};
   } else if (token->type == ASTRuleTokenType::TOKEN) {
-#ifdef DEBUG
-    cout << "try token - token - " << token->value.token;
-#endif
-
-    if ((**current)->type == token->value.token.type) {
+    if ((**current).type == token->value.token.type) {
       if (token->value.token.orig == "" ||
-          token->value.token.orig == (**current)->orig) {
-#ifdef DEBUG
-        cout << " - YES" << endl;
-#endif
+          token->value.token.orig == (**current).orig) {
         (*current)++;
         loop_set.clear();
 
         ostringstream os;
-        os << (**(*current - 1));
+        os << *prev(*current);
         return new ASTNode{os.str()};
       }
     }
 
-#ifdef DEBUG
-    cout << " - NO" << endl;
-#endif
     return nullptr;
-
   } else if (token->type == ASTRuleTokenType::DEFINITION) {
-#ifdef DEBUG
-    cout << "try token - definition - " << token->value.definition << endl;
-#endif
     return try_or_group(current, end, (*rules)[token->value.definition]);
   } else if (token->type == ASTRuleTokenType::OR_GROUP) {
-#ifdef DEBUG
-    cout << "try token - or group" << endl;
-#endif
     return try_or_group(current, end, token->value.or_group);
   }
 
