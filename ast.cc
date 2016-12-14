@@ -39,7 +39,7 @@ void ASTNode::debug(string padding = "") const {
 class AST {
  private:
   ASTNode* root;
-  AstRuleBuilder rule_builder;
+  AstRuleBuilder *rule_builder;
   map<string, ASTRuleOrGroup*>* rules;
   /// Evaluating rules can get into an infinite loop when a sub-rule is the
   /// same as a parent rule (any parent) without progressing on the token line.
@@ -63,10 +63,8 @@ class AST {
   void debug() { root->debug(); };
 };
 
-AST::AST(vector<Token> tokens) {
-  rule_builder.build();
-
-  rules = rule_builder.get_rules();
+AST::AST(vector<Token> tokens) : rule_builder(new AstRuleBuilder("./ast.rule")) {
+  rules = rule_builder->get_rules();
 
   auto begin = tokens.begin();
   auto end = tokens.end();
@@ -76,6 +74,7 @@ AST::AST(vector<Token> tokens) {
 
 AST::~AST() {
   delete root;
+  delete rule_builder;
 }
 
 ASTNode* AST::try_or_group(vector<Token>::iterator* current,

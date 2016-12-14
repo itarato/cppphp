@@ -83,13 +83,15 @@ class AstRuleBuilder {
   void parse_rule(string&);
   ASTRuleOrGroup* parse_rule_group(istringstream&);
 
+  void build();
+
  public:
-  AstRuleBuilder() : fin("./ast.rule"){};
+  AstRuleBuilder(string filename) : fin(filename){
+    build();
+  };
   ~AstRuleBuilder();
 
   map<string, ASTRuleOrGroup*>* get_rules() { return &rules; };
-
-  void build();
 };
 
 AstRuleBuilder::~AstRuleBuilder() {
