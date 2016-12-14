@@ -30,18 +30,26 @@ ASTRuleTokenType token_type_of(string);
 
 struct ASTRuleToken {
   ASTRuleTokenType type;
-  union {
+  union ASTRuleTokenValue {
     Token token;
     string definition;
     ASTRuleOrGroup* or_group;
     // Nothing is only defined in the struct's `type`.
+
+    ~ASTRuleTokenValue(){};
   } value;
+
+  ~ASTRuleToken();
 
   void debug(string);
 };
 
 struct ASTRuleConcatGroup {
   vector<ASTRuleToken*> tokens;
+
+  ~ASTRuleConcatGroup() {
+    for (auto& e : tokens) delete e;
+  };
 
   void debug(string);
 };
@@ -50,8 +58,20 @@ struct ASTRuleOrGroup {
   vector<ASTRuleConcatGroup*> options;
   bool flagAnyNumberRepeat;
 
+  ~ASTRuleOrGroup() {
+    for (auto& e : options) {
+      delete e;
+    }
+  };
+
   void debug(string);
 };
+
+ASTRuleToken::~ASTRuleToken() {
+  if (type == ASTRuleTokenType::OR_GROUP) {
+    delete value.or_group;
+  }
+}
 
 // AstRuleBuilder /////////////////////////////////////////////////////////////
 

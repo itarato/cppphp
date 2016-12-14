@@ -34,6 +34,7 @@ struct Token {
   Token(){};
   Token(string _orig, TokenType _type) : orig(_orig), type(_type){};
   Token(const Token & t) : orig(t.orig), type(t.type) {};
+  ~Token() {};
 
   friend ostream &operator<<(ostream &, const Token &);
 };
