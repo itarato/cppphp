@@ -151,14 +151,6 @@ void AstRuleBuilder::build() {
     getline(fin, word);
     parse_rule(word);
   }
-
-#ifdef DEBUG
-  for (auto it : rules) {
-    cout << it.first << endl;
-    it.second->debug("  ");
-    cout << endl;
-  }
-#endif
 }
 
 void AstRuleBuilder::parse_rule(string& rule_raw) {
